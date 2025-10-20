@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -118,22 +119,149 @@ class BasicTest {
                     .isTrue();
         }
 
+        // --- Singleton and Factory Pattern Tests ---
+
         @Nested
         @DisplayName("Factory and Singleton Behavior")
         class FactoryTests {
-            // ... (omitted for brevity, same as before)
+
+            @Test
+            @DisplayName("✅ should not have any public constructors")
+            void should_notHavePublicConstructors() {
+                Constructor<?>[] constructors = Warehouse.class.getConstructors();
+                assertThat(constructors)
+                        .as("Warehouse should only be accessed via its getInstance() factory method.")
+                        .isEmpty();
+            }
+
+            @Test
+            @DisplayName("✅ should be created by calling the 'getInstance' factory method")
+            void should_beCreated_when_usingFactoryMethod() {
+                Warehouse defaultWarehouse = Warehouse.getInstance();
+                assertThat(defaultWarehouse).isNotNull();
+            }
+
+            @Test
+            @DisplayName("✅ should return the same instance for the same name")
+            void should_returnSameInstance_when_nameIsIdentical() {
+                Warehouse warehouse1 = Warehouse.getInstance("GlobalStore");
+                Warehouse warehouse2 = Warehouse.getInstance("GlobalStore");
+                assertThat(warehouse1)
+                        .as("Warehouses with the same name should be the same singleton instance.")
+                        .isSameAs(warehouse2);
+            }
         }
 
         @Nested
         @DisplayName("Product Management")
         class ProductManagementTests {
 
-            // ... (most tests omitted for brevity, same as before)
+            @Test
+            @DisplayName("✅ should be empty when new")
+            void should_beEmpty_when_new() {
+                assertThat(warehouse.isEmpty())
+                        .as("A new warehouse instance should have no products.")
+                        .isTrue();
+            }
+
+            @Test
+            @DisplayName("✅ should return an empty product list when new")
+            void should_returnEmptyProductList_when_new() {
+                assertThat(warehouse.getProducts())
+                        .as("A new warehouse should return an empty list, not null.")
+                        .isEmpty();
+            }
+
+            @Test
+            @DisplayName("✅ should store various product types (Food, Electronics)")
+            void should_storeHeterogeneousProducts() {
+                // Arrange
+                Product milk = new FoodProduct(UUID.randomUUID(), "Milk", Category.of("Dairy"), new BigDecimal("15.50"), LocalDate.now().plusDays(7), new BigDecimal("1.0"));
+                Product laptop = new ElectronicsProduct(UUID.randomUUID(), "Laptop", Category.of("Electronics"), new BigDecimal("12999"), 24, new BigDecimal("2.2"));
+
+                // Act
+                warehouse.addProduct(milk);
+                warehouse.addProduct(laptop);
+
+                // Assert
+                assertThat(warehouse.getProducts())
+                        .as("Warehouse should correctly store different subtypes of Product.")
+                        .hasSize(2)
+                        .containsExactlyInAnyOrder(milk, laptop);
+            }
+
+
+
+            @Test
+            @DisplayName("❌ should throw an exception when adding a product with a duplicate ID")
+            void should_throwException_when_addingProductWithDuplicateId() {
+                // Arrange
+                UUID sharedId = UUID.randomUUID();
+                Product milk = new FoodProduct(sharedId, "Milk", Category.of("Dairy"), BigDecimal.ONE, LocalDate.now(), BigDecimal.ONE);
+                Product cheese = new FoodProduct(sharedId, "Cheese", Category.of("Dairy"), BigDecimal.TEN, LocalDate.now(), BigDecimal.TEN);
+                warehouse.addProduct(milk);
+
+                // Act & Assert
+                assertThatThrownBy(() -> warehouse.addProduct(cheese))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessage("Product with that id already exists, use updateProduct for updates.");
+            }
+
+            @Test
+            @DisplayName("✅ should update the price of an existing product")
+            void should_updateExistingProductPrice() {
+                // Arrange
+                Product milk = new FoodProduct(UUID.randomUUID(), "Milk", Category.of("Dairy"), new BigDecimal("15.50"), LocalDate.now().plusDays(7), new BigDecimal("1.0"));
+                warehouse.addProduct(milk);
+                BigDecimal newPrice = new BigDecimal("17.00");
+
+                // Act
+                warehouse.updateProductPrice(milk.uuid(), newPrice);
+
+                // Assert
+                assertThat(warehouse.getProductById(milk.uuid()))
+                        .as("The product's price should be updated to the new value.")
+                        .isPresent()
+                        .hasValueSatisfying(product ->
+                                assertThat(product.price()).isEqualByComparingTo(newPrice)
+                        );
+            }
+
+            @Test
+            @DisplayName("✅ should group products correctly by their category")
+            void should_groupProductsByCategories() {
+                // Arrange
+                Product milk = new FoodProduct(UUID.randomUUID(), "Milk", Category.of("Dairy"), BigDecimal.ONE, LocalDate.now(), BigDecimal.ONE);
+                Product apple = new FoodProduct(UUID.randomUUID(), "Apple", Category.of("Fruit"), BigDecimal.ONE, LocalDate.now(), BigDecimal.ONE);
+                Product laptop = new ElectronicsProduct(UUID.randomUUID(), "Laptop", Category.of("Electronics"), BigDecimal.TEN, 24, BigDecimal.TEN);
+                warehouse.addProduct(milk);
+                warehouse.addProduct(apple);
+                warehouse.addProduct(laptop);
+
+                Map<Category, List<Product>> expectedMap = Map.of(
+                        Category.of("Dairy"), List.of(milk),
+                        Category.of("Fruit"), List.of(apple),
+                        Category.of("Electronics"), List.of(laptop)
+                );
+
+                // Act & Assert
+                assertThat(warehouse.getProductsGroupedByCategories())
+                        .as("The returned map should have categories as keys and lists of products as values.")
+                        .isEqualTo(expectedMap);
+            }
 
             @Test
             @DisplayName("🔒 should return an unmodifiable list of products to protect internal state")
             void should_returnUnmodifiableProductList() {
-                // ... (same as before)
+                // Arrange
+                Product milk = new FoodProduct(UUID.randomUUID(), "Milk", Category.of("Dairy"), BigDecimal.ONE, LocalDate.now(), BigDecimal.ONE);
+                warehouse.addProduct(milk);
+                List<Product> products = warehouse.getProducts();
+
+                // Act & Assert
+                assertThatThrownBy(products::clear)
+                        .as("The list returned by getProducts() should be immutable to prevent external modification.")
+                        .isInstanceOf(UnsupportedOperationException.class);
             }
 
             @Test
