@@ -9,8 +9,8 @@ public abstract class Product {
     private final Category category;
     private BigDecimal price;
 
-    protected Product(String name, Category category, BigDecimal price) {
-        this.id = UUID.randomUUID();
+    protected Product(UUID uuid, String name, Category category, BigDecimal price) {
+        this.id = uuid;
         this.name = name;
         this.category = category;
         this.price = price;
@@ -32,7 +32,7 @@ public abstract class Product {
         return price;
     }
 
-    public void price(BigDecimal price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

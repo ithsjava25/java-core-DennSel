@@ -6,23 +6,21 @@ public class Category {
     private String name;
 
     // Constructor
-    private Category(String nameConstructor) {
-        this.name = nameConstructor;
+    private Category(String name) {
+        this.name = name;
     }
 
-    // Cache
+    // Create 1 static cache map when initialized, then points to the HashMap reference.
     private static final Map<String, Category> categories = new HashMap<>();
 
     // Factory
     public static Category of(String nameOf){
         if (nameOf == null){
-            IO.println("Category name can't be null");
-            return null;
+            throw new IllegalArgumentException("Category name can't be null");
         }
 
         if (nameOf.isBlank()){
-            IO.println("Category name can't be blank");
-            return null;
+            throw new IllegalArgumentException("Category name can't be blank");
         }
 
         // Normalize to capital letter
@@ -44,5 +42,9 @@ public class Category {
         input = input.trim().toLowerCase();
         input = input.substring(0,1).toUpperCase() + input.substring(1);
         return input;
+    }
+
+    public String getName(){
+        return this.name;
     }
 }
