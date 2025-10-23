@@ -144,25 +144,89 @@ class WarehouseAnalyzer {
      * @param standardDeviations threshold in standard deviations (e.g., 2.0)
      * @return list of products considered outliers
      */
+
+
     public List<Product> findPriceOutliers(double standardDeviations) {
         List<Product> products = warehouse.getProducts();
-        int n = products.size();
+        List<Double> sortedByPrice = products.stream()
+                .map(p -> p.price().doubleValue())
+                .sorted()
+                .toList();
+
+        // Amount of elements in list
+        int n = sortedByPrice.size();
+        // Return empty list if there's no elements
         if (n == 0) return List.of();
-        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
-        double mean = sum / n;
-        double variance = products.stream()
-                .map(Product::price)
-                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
-                .sum() / n;
-        double std = Math.sqrt(variance);
-        double threshold = standardDeviations * std;
-        List<Product> outliers = new ArrayList<>();
-        for (Product p : products) {
-            double diff = Math.abs(p.price().doubleValue() - mean);
-            if (diff > threshold) outliers.add(p);
+        // Get index of the median (left index if even list size)
+        int q2Index = (n - 1) / 2;
+        double q2Value = 0.0;
+        int q1Index = 0;
+        double q1Value = 0.0;
+        int q3Index = 0;
+        double q3Value = 0.0;
+        double iqr = 0.0;
+
+        // If even size list
+        if (n % 2 == 0) {
+            q1Index = q2Index / 2;
+            q3Index = (q2Index + n) / 2;
+            q1Value = calculateMedian(sortedByPrice, q1Index);
+            q3Value = calculateMedian(sortedByPrice, q3Index);
         }
-        return outliers;
+        // If odd size list
+        else {
+            q1Index = (q2Index-1) / 2;
+            q3Index = (q2Index + n) / 2;
+            q1Value = calculateMedian(sortedByPrice, q1Index);
+            q3Value = calculateMedian(sortedByPrice, q3Index);
+        }
+
+        // Create outer values to find outliers
+        iqr = q3Value - q1Value;
+        // Have to make it "effectively final" ..
+        double lowOutline = q1Value - standardDeviations * iqr;
+        double highOutline = q3Value + standardDeviations * iqr;
+
+        // Return the outliers
+        return products.stream()
+                .filter(p -> p.price().doubleValue() < lowOutline || p.price().doubleValue() > highOutline)
+                .collect(Collectors.toList());
     }
+
+    public static double calculateMedian (List<Double> sortedList, int startIndex) {
+        int nextIndex = startIndex+1;
+        double firstValue = sortedList.get(startIndex);
+        double secondValue = sortedList.get(nextIndex);
+
+        if (sortedList.size() % 2 == 0) {
+            return (firstValue+secondValue)/2;
+        }
+        else {
+            return (firstValue);
+        }
+    }
+
+
+
+//    public List<Product> findPriceOutliers(double standardDeviations) {
+//        List<Product> products = warehouse.getProducts();
+//        int n = products.size();
+//        if (n == 0) return List.of();
+//        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
+//        double mean = sum / n;
+//        double variance = products.stream()
+//                .map(Product::price)
+//                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
+//                .sum() / n;
+//        double std = Math.sqrt(variance);
+//        double threshold = standardDeviations * std;
+//        List<Product> outliers = new ArrayList<>();
+//        for (Product p : products) {
+//            double diff = Math.abs(p.price().doubleValue() - mean);
+//            if (diff > threshold) outliers.add(p);
+//        }
+//        return outliers;
+//    }
 
     /**
      * Groups all shippable products into ShippingGroup buckets such that each group's total weight
