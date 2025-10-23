@@ -159,12 +159,11 @@ class WarehouseAnalyzer {
         if (n == 0) return List.of();
         // Get index of the median (left index if even list size)
         int q2Index = (n - 1) / 2;
-        double q2Value = 0.0;
-        int q1Index = 0;
-        double q1Value = 0.0;
-        int q3Index = 0;
-        double q3Value = 0.0;
-        double iqr = 0.0;
+        int q1Index;
+        double q1Value;
+        int q3Index;
+        double q3Value;
+        double iqr;
 
         // If even size list
         if (n % 2 == 0) {
