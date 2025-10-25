@@ -52,7 +52,7 @@ public class Warehouse {
         return Collections.unmodifiableList(new ArrayList<>(products));
     }
 
-    // Get single product by id
+    // Get a single product by id
     public Optional<Product> getProductById(UUID uuid) {
         return products.stream()
                 // Find matching ID
