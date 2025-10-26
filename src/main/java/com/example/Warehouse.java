@@ -108,9 +108,9 @@ public class Warehouse {
 
     public List<Shippable> shippableProducts() {
         return products.stream()
-                .filter(item -> item instanceof Shippable)
-                .map(item -> (Shippable) item)
-                .collect(toList());
+                .filter(item -> item instanceof Shippable) // Find every item implementing Shippable
+                .map(item -> (Shippable) item) // Turn Product into Shippable
+                .collect(toList()); // Finally return the list
     }
 
     public void remove(UUID uuid) {
