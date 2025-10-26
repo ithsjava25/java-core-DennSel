@@ -137,16 +137,21 @@ class WarehouseAnalyzer {
         return result;
     }
 
+    // Del av text lånad från Kathify
     /**
-     * Identifies products whose price deviates from the mean by more than the specified
-     * number of standard deviations. Uses population standard deviation over all products. Test expectation: with a mostly tight cluster and two extremes, calling with 2.0 returns the two extremes.
+     * Finds products with prices that are unusually high or low
+     * using the IQR method
+     * Below Q1 - (q1Value - multiplier * iqr) or above Q3 + (q3Value + multiplier * iqr)
+     * are considered outliers
+     * In tests with mostly similar prices and two extreme values,
+     * a threshold of 2.0 should detect both extremes
      *
-     * @param standardDeviations threshold in standard deviations (e.g., 2.0)
-     * @return list of products considered outliers
+     * @param multiplier multiplier for IQR (e.g., 1.5 or 2.0)
+     * @return list of outlier products
      */
 
-
-    public List<Product> findPriceOutliers(double standardDeviations) {
+    // This could definitely be improved, simplified..
+    public List<Product> findPriceOutliers(double multiplier) {
         List<Product> products = warehouse.getProducts();
         List<Double> sortedByPrice = products.stream()
                 .map(p -> p.price().doubleValue())
@@ -182,9 +187,9 @@ class WarehouseAnalyzer {
 
         // Create outer values to find outliers
         iqr = q3Value - q1Value;
-        // Have to make it "effectively final" ..
-        double lowOutline = q1Value - standardDeviations * iqr;
-        double highOutline = q3Value + standardDeviations * iqr;
+        // Have to make it "effectively final"
+        double lowOutline = q1Value - multiplier * iqr;
+        double highOutline = q3Value + multiplier * iqr;
 
         // Return the outliers
         return products.stream()
@@ -205,27 +210,6 @@ class WarehouseAnalyzer {
         }
     }
 
-
-
-//    public List<Product> findPriceOutliers(double standardDeviations) {
-//        List<Product> products = warehouse.getProducts();
-//        int n = products.size();
-//        if (n == 0) return List.of();
-//        double sum = products.stream().map(Product::price).mapToDouble(bd -> bd.doubleValue()).sum();
-//        double mean = sum / n;
-//        double variance = products.stream()
-//                .map(Product::price)
-//                .mapToDouble(bd -> Math.pow(bd.doubleValue() - mean, 2))
-//                .sum() / n;
-//        double std = Math.sqrt(variance);
-//        double threshold = standardDeviations * std;
-//        List<Product> outliers = new ArrayList<>();
-//        for (Product p : products) {
-//            double diff = Math.abs(p.price().doubleValue() - mean);
-//            if (diff > threshold) outliers.add(p);
-//        }
-//        return outliers;
-//    }
 
     /**
      * Groups all shippable products into ShippingGroup buckets such that each group's total weight
