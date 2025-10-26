@@ -17,7 +17,7 @@ public class Warehouse {
 
     // Constructor
     private Warehouse() {
-        // HashSet faster add, remove, contains (I've read) and no order needed
+        // HashSet with faster add, remove, contains (I've read) and no order needed
         this.name = "Default";
         this.products = new HashSet<>();
         this.changedProducts = new HashSet<>();
