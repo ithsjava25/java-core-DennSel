@@ -167,7 +167,7 @@ class EdgeCaseTest {
          * Assert: Dairy category has weighted average 11.43.
          */
         void should_calculateWeightedAveragePrice_byCategory() {
-            // Arrange - Products with different weights in same category
+            // Arrange - Products with different weights in the same category
             Category dairy = Category.of("Dairy");
             warehouse.addProduct(new FoodProduct(UUID.randomUUID(), "Milk", dairy,
                     new BigDecimal("10.00"), LocalDate.now().plusDays(5), new BigDecimal("2.0"))); // Weight: 2kg
