@@ -162,31 +162,17 @@ class WarehouseAnalyzer {
         int elements = sortedByPrice.size();
         // Return empty list if there's no elements
         if (elements == 0) return List.of();
-        // Get index of the median (left index if even list size)
-        int q2Index = (elements - 1) / 2;
-        int q1Index;
-        double q1Value;
-        int q3Index;
-        double q3Value;
-        double iqr;
 
-        // If even size list
-        if (elements % 2 == 0) {
-            q1Index = q2Index / 2;
-            q3Index = (q2Index + elements) / 2;
-            q1Value = calculateMedian(sortedByPrice, q1Index);
-            q3Value = calculateMedian(sortedByPrice, q3Index);
-        }
-        // If odd size list
-        else {
-            q1Index = (q2Index-1) / 2;
-            q3Index = (q2Index + elements) / 2;
-            q1Value = calculateMedian(sortedByPrice, q1Index);
-            q3Value = calculateMedian(sortedByPrice, q3Index);
-        }
+        // Get indexes
+        double q1Index = (elements+1)*0.25;
+        double q3Index = (elements+1)*0.75;
+
+        // Get quartile values
+        double q1Value = calculateQuartiles(sortedByPrice, q1Index);
+        double q3Value = calculateQuartiles(sortedByPrice, q3Index);
 
         // Create outer values to find outliers
-        iqr = q3Value - q1Value;
+        double iqr = q3Value - q1Value;
         // Have to make it "effectively final"
         double lowOutline = q1Value - multiplier * iqr;
         double highOutline = q3Value + multiplier * iqr;
@@ -197,17 +183,22 @@ class WarehouseAnalyzer {
                 .collect(Collectors.toList());
     }
 
-    public static double calculateMedian (List<Double> sortedList, int startIndex) {
-        int nextIndex = startIndex+1;
-        double firstValue = sortedList.get(startIndex);
-        double secondValue = sortedList.get(nextIndex);
+    public static double calculateQuartiles (List<Double> sortedList, double index) {
+        // Floor of index
+        int indexFloor = (int) Math.floor(index);
 
-        if (sortedList.size() % 2 == 0) {
-            return (firstValue);
+        // If whole number
+        if(index == indexFloor) {
+            return sortedList.get(indexFloor);
         }
         else {
+            // Fraction to use in interpolation
+            double fraction = index - indexFloor;
+            double lower = sortedList.get(indexFloor);
+            double upper = sortedList.get(indexFloor+1);
 
-            return (firstValue+secondValue)/2;
+            // return interpolation (had to look it up, understand it but still a bit muddy)
+            return lower + (fraction * (upper - lower));
         }
     }
 
