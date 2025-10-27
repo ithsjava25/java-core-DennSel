@@ -119,8 +119,8 @@ public class Warehouse {
     }
 
     public Map<Category, List<Product>> getProductsGroupedByCategories() {
-        return products.stream()
-                .collect(groupingBy(Product::category));
+        return Collections.unmodifiableMap(products.stream()
+                .collect(groupingBy(Product::category)));
     }
 }
 

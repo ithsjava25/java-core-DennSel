@@ -159,11 +159,11 @@ class WarehouseAnalyzer {
                 .toList();
 
         // Amount of elements in list
-        int n = sortedByPrice.size();
+        int elements = sortedByPrice.size();
         // Return empty list if there's no elements
-        if (n == 0) return List.of();
+        if (elements == 0) return List.of();
         // Get index of the median (left index if even list size)
-        int q2Index = (n - 1) / 2;
+        int q2Index = (elements - 1) / 2;
         int q1Index;
         double q1Value;
         int q3Index;
@@ -171,16 +171,16 @@ class WarehouseAnalyzer {
         double iqr;
 
         // If even size list
-        if (n % 2 == 0) {
+        if (elements % 2 == 0) {
             q1Index = q2Index / 2;
-            q3Index = (q2Index + n) / 2;
+            q3Index = (q2Index + elements) / 2;
             q1Value = calculateMedian(sortedByPrice, q1Index);
             q3Value = calculateMedian(sortedByPrice, q3Index);
         }
         // If odd size list
         else {
             q1Index = (q2Index-1) / 2;
-            q3Index = (q2Index + n) / 2;
+            q3Index = (q2Index + elements) / 2;
             q1Value = calculateMedian(sortedByPrice, q1Index);
             q3Value = calculateMedian(sortedByPrice, q3Index);
         }
@@ -203,13 +203,13 @@ class WarehouseAnalyzer {
         double secondValue = sortedList.get(nextIndex);
 
         if (sortedList.size() % 2 == 0) {
-            return (firstValue+secondValue)/2;
-        }
-        else {
             return (firstValue);
         }
-    }
+        else {
 
+            return (firstValue+secondValue)/2;
+        }
+    }
 
     /**
      * Groups all shippable products into ShippingGroup buckets such that each group's total weight

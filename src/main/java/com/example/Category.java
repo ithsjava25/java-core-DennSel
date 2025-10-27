@@ -40,6 +40,7 @@ public class Category {
     // Method to normalize to capital letter
     private static String normalize(String input) {
         input = input.trim().toLowerCase();
+        if (input.isEmpty()) throw new IllegalArgumentException("Category name must not be blank");
         input = input.substring(0,1).toUpperCase() + input.substring(1);
         return input;
     }
