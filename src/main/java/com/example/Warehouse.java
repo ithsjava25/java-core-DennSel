@@ -88,10 +88,6 @@ public class Warehouse {
     public void clearProducts() {
         products.clear();
         changedProducts.clear();
-        if (instances != null){
-            instances.clear();
-        }
-
     }
 
     public boolean isEmpty() {
