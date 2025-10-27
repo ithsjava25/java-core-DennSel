@@ -289,7 +289,7 @@ class BasicTest {
             void should_throwException_when_addingNullProduct() {
                 assertThatThrownBy(() -> warehouse.addProduct(null))
                         .isInstanceOf(IllegalArgumentException.class)
-                        .hasMessage("Product cannot be null.");
+                        .hasMessage("Product cannot mvn clean install -Ube null.");
             }
 
             @Test

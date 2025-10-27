@@ -167,7 +167,7 @@ class EdgeCaseTest {
          * Assert: Dairy category has weighted average 11.43.
          */
         void should_calculateWeightedAveragePrice_byCategory() {
-            // Arrange - Products with different weights in same category
+            // Arrange - Products with different weights in the same category
             Category dairy = Category.of("Dairy");
             warehouse.addProduct(new FoodProduct(UUID.randomUUID(), "Milk", dairy,
                     new BigDecimal("10.00"), LocalDate.now().plusDays(5), new BigDecimal("2.0"))); // Weight: 2kg
@@ -185,14 +185,18 @@ class EdgeCaseTest {
                     .isEqualByComparingTo(new BigDecimal("11.43"));
         }
 
+        // Del av text lånad från Kathify
+        /**
+         * Finds products with prices that are unusually high or low
+         * using the IQR method
+         * Below Q1 - (q1Value - multiplier * iqr) or above Q3 + (q3Value + multiplier * iqr)
+         * are considered outliers
+         * In tests with mostly similar prices and two extreme values,
+         * a threshold of 2.0 should detect both extremes
+         */
         @Test
         @DisplayName("📊 should identify products with abnormal pricing (outliers)")
-        /**
-         * Detects price outliers using mean and standard deviation.
-         * Arrange: mostly normal-priced items around 15, plus very cheap and very expensive outliers.
-         * Act: analyzer.findPriceOutliers(2.0).
-         * Assert: returns exactly the two outliers ("Expensive" and "Cheap").
-         */
+
         void should_identifyPriceOutliers_usingStatistics() {
             // Arrange - Most products around 10-20, with outliers
             IntStream.rangeClosed(1, 10).forEach(i ->
